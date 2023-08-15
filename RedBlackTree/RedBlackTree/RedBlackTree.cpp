@@ -1,6 +1,6 @@
 ﻿#include <iostream>
 #include <stdlib.h>
-#include <time.h>
+#include <windows.h>
 #include "RBTree.hpp"
 
 using namespace std;
@@ -10,7 +10,7 @@ int main() {
 
     int arr[50];
 
-    srand(unsigned int(time(0)));
+    srand(GetTickCount());
 
     int count = 0;
 
@@ -30,11 +30,8 @@ int main() {
         }
     }
 
-    cout << "In-order traversal of the tree: ";
-    rbTree.inOrderTraversal(rbTree.getRoot());
-    cout << endl;
-
-    
+    cout << "Red-Black Tree:" << endl;
+    rbTree.printTree(rbTree.getRoot());
 
     return 0;
 }
