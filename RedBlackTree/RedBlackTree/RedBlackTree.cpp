@@ -1,6 +1,11 @@
 ﻿#include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
+#include <ctime>
 #include <windows.h>
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <vector>
 #include "RBTree.hpp"
 
 using namespace std;
@@ -8,16 +13,16 @@ using namespace std;
 int main() {
     RedBlackTree<int> rbTree;
 
-    int arr[50];
+    int arr[2000];
 
     srand(GetTickCount());
 
     int count = 0;
 
-    while(count < 50){
-        int tmp = rand() % 100 + 1;
+    while(count < 2000){
+        int tmp = rand() % 5000 + 1;
         int isSame = 0;
-        for (int i = 0; i < 50; i++){
+        for (int i = 0; i < 2000; i++){
             if(tmp == arr[i]){
                 isSame = 1;
                 break;

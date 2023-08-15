@@ -1,6 +1,12 @@
 #pragma once
 using namespace std;
 
+atomic<bool> insertInProgress(false);
+atomic<bool> eraseInProgress(false);
+
+mutex insertMutex;
+mutex eraseMutex;
+
 enum Color { RED, BLACK };
 
 template <typename KeyType>
@@ -302,27 +308,49 @@ public:
     }
 
     void printTree(Node<KeyType>* node, int level = 0, char direction = 'R') {
-    if (node != nullptr) {
-        printTree(node->right, level + 1, 'R');
+        if (node != nullptr) {
+            printTree(node->right, level + 1, 'R');
 
-        for (int i = 0; i < level; ++i) {
-            cout << "    ";
-        }
+            for (int i = 0; i < level; ++i) {
+                cout << "    ";
+            }
 
-        cout << "|--";
-        if (node->color == RED) {
-            cout << "\033[31m";  // Red color code for console
-        }
-        cout << node->key;
-        if (node->color == RED) {
-            cout << "\033[0m";  // Reset color
-        }
-        cout << std::endl;
+            cout << "|--";
+            if (node->color == RED) {
+                cout << "\033[31m";  // Red color code for console
+            }
+            cout << node->key;
+            if (node->color == RED) {
+                cout << "\033[0m";  // Reset color
+            }
+            cout << std::endl;
 
-        printTree(node->left, level + 1, 'L');
+            printTree(node->left, level + 1, 'L');
+        }
     }
-}
 
+    void insertNodeSafely(RedBlackTree<int>& rbTree, int key) {
+        while (insertInProgress.exchange(true)) {
+            this_thread::yield();
+        }
+
+        lock_guard<mutex> lock(insertMutex);
+
+        rbTree.insert(key);
+
+        insertInProgress.store(false);
+    }
+
+    void deleteNodeSafely(RedBlackTree<int>& rbTree, int key) {
+        while (deleteInProgress.exchange(true)) {
+            this_thread::yield();
+        }
+
+        lock_guard<mutex> lock(deleteMutex);
+
+        rbTree.erase(key);
+
+        deleteInProgress.store(false);
+    }
     
-
 };
