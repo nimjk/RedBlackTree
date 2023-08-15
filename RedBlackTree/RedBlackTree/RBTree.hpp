@@ -1,23 +1,45 @@
 #pragma once
+using namespace std;
 
 enum Color { RED, BLACK };
 
+template <typename KeyType>
 struct Node {
-    int key;
+    KeyType key;
     Color color;
     Node* left;
     Node* right;
     Node* parent;
 
-    Node(int k, Color c = RED) : key(k), color(c), left(nullptr), right(nullptr), parent(nullptr) {}
+    Node(const KeyType& k, Color c = RED) : key(k), color(c), left(nullptr), right(nullptr), parent(nullptr) {}
 };
 
+template <typename KeyType>
 class RedBlackTree {
 private:
-    Node* root;
+    Node<KeyType>* root;
 
-    void rotateLeft(Node* x) {
-        Node* y = x->right;
+    Node<KeyType>* searchNode(Node<KeyType>* node, const KeyType& key) {
+        if (node == nullptr || node->key == key) {
+            return node;
+        }
+
+        if (key < node->key) {
+            return searchNode(node->left, key);
+        } else {
+            return searchNode(node->right, key);
+        }
+    }
+
+    Node<KeyType>* minimumNode(Node<KeyType>* node) {
+        while (node->left != nullptr) {
+            node = node->left;
+        }
+        return node;
+    }
+
+    void rotateLeft(Node<KeyType>* x) {
+        Node<KeyType>* y = x->right;
         x->right = y->left;
         if (y->left != nullptr) {
             y->left->parent = x;
@@ -34,8 +56,8 @@ private:
         x->parent = y;
     }
 
-    void rotateRight(Node* y) {
-        Node* x = y->left;
+    void rotateRight(Node<KeyType>* y) {
+        Node<KeyType>* x = y->left;
         y->left = x->right;
         if (x->right != nullptr) {
             x->right->parent = y;
@@ -52,10 +74,25 @@ private:
         y->parent = x;
     }
 
-    void insertFixup(Node* z) {
+    void transplant(Node<KeyType>* u, Node<KeyType>* v) {
+        if (u->parent == nullptr) {
+            root = v;
+        } else if (u == u->parent->left) {
+            u->parent->left = v;
+        } else {
+            u->parent->right = v;
+        }
+    
+        if (v != nullptr) {
+            v->parent = u->parent;
+        }
+    }
+
+
+    void insertFixup(Node<KeyType>* z) {
         while (z != root && z->parent != nullptr && z->parent->color == RED) {
             if (z->parent == z->parent->parent->left) {
-                Node* y = z->parent->parent->right;
+                Node<KeyType>* y = z->parent->parent->right;
                 if (y != nullptr && y->color == RED) {
                     z->parent->color = BLACK;
                     y->color = BLACK;
@@ -71,7 +108,7 @@ private:
                     rotateRight(z->parent->parent);
                 }
             } else {
-                Node* y = z->parent->parent->left;
+                Node<KeyType>* y = z->parent->parent->left;
                 if (y != nullptr && y->color == RED) {
                     z->parent->color = BLACK;
                     y->color = BLACK;
@@ -91,13 +128,96 @@ private:
         root->color = BLACK;
     }
 
+    void eraseFixup(Node<KeyType>* x) {
+    while (x != root && x != nullptr && x->color == BLACK) {
+        if (x == x->parent->left) {
+            Node<KeyType>* w = x->parent->right;
+            if (w != nullptr) {
+                if (w->color == RED) {
+                    w->color = BLACK;
+                    x->parent->color = RED;
+                    rotateLeft(x->parent);
+                    w = x->parent->right;
+                }
+
+                if ((w->left == nullptr || w->left->color == BLACK) && 
+                    (w->right == nullptr || w->right->color == BLACK)) {
+                    w->color = RED;
+                    x = x->parent;
+                } else {
+                    if (w->right == nullptr || w->right->color == BLACK) {
+                        if (w->left != nullptr) {
+                            w->left->color = BLACK;
+                        }
+                        w->color = RED;
+                        rotateRight(w);
+                        w = x->parent->right;
+                    }
+
+                    w->color = x->parent->color;
+                    x->parent->color = BLACK;
+                    if (w->right != nullptr) {
+                        w->right->color = BLACK;
+                    }
+                    rotateLeft(x->parent);
+                    x = root;  // Terminate loop
+                }
+            }
+        } else {
+            Node<KeyType>* w = x->parent->left;
+            if (w != nullptr) {
+                if (w->color == RED) {
+                    w->color = BLACK;
+                    x->parent->color = RED;
+                    rotateRight(x->parent);
+                    w = x->parent->left;
+                }
+
+                if ((w->right == nullptr || w->right->color == BLACK) &&
+                    (w->left == nullptr || w->left->color == BLACK)) {
+                    w->color = RED;
+                    x = x->parent;
+                } else {
+                    if (w->left == nullptr || w->left->color == BLACK) {
+                        if (w->right != nullptr) {
+                            w->right->color = BLACK;
+                        }
+                        w->color = RED;
+                        rotateLeft(w);
+                        w = x->parent->left;
+                    }
+
+                    w->color = x->parent->color;
+                    x->parent->color = BLACK;
+                    if (w->left != nullptr) {
+                        w->left->color = BLACK;
+                    }
+                    rotateRight(x->parent);
+                    x = root;  // Terminate loop
+                }
+            }
+        }
+    }
+
+    if (x != nullptr) {
+        x->color = BLACK;
+    }
+
+    
+}
+
+
 public:
     RedBlackTree() : root(nullptr) {}
 
-    void insert(int key) {
-        Node* newNode = new Node(key);
-        Node* y = nullptr;
-        Node* x = root;
+    Node<KeyType>* getRoot() const {
+        return root;
+    }
+
+    void insert(const KeyType& key) {
+        Node<KeyType>* newNode = new Node<KeyType>(key);
+        Node<KeyType>* y = nullptr;
+        Node<KeyType>* x = root;
 
         while (x != nullptr) {
             y = x;
@@ -120,5 +240,67 @@ public:
         insertFixup(newNode);
     }
 
-    // 추가 기능들을 구현하고 싶다면 여기에 추가합니다.
+    void erase(const KeyType& key) {
+        Node<KeyType>* z = searchNode(root, key);
+        if (z == nullptr) {
+            return;  // Node with the given key doesn't exist in the tree
+        }
+
+        Node<KeyType>* y = z;
+        Node<KeyType>* x = nullptr;
+        Color y_original_color = y->color;
+
+        if (z->left == nullptr) {
+            x = z->right;
+            transplant(z, z->right);
+        } else if (z->right == nullptr) {
+            x = z->left;
+            transplant(z, z->left);
+        } else {
+            y = minimumNode(z->right);
+            y_original_color = y->color;
+            x = y->right;
+
+            if (y->parent == z) {
+                if (x != nullptr) {
+                    x->parent = y;
+                }
+            } else {
+                transplant(y, y->right);
+                y->right = z->right;
+                y->right->parent = y;
+            }
+
+            transplant(z, y);
+            y->left = z->left;
+            y->left->parent = y;
+            y->color = z->color;
+        }
+
+        delete z;
+
+        if (y_original_color == BLACK) {
+            eraseFixup(x);
+        }
+    }
+
+    void search(const KeyType& key) {
+        Node<KeyType>* result = searchNode(root, key);
+        if (result != nullptr) {
+            cout << "Node with key " << key << " found in the tree." << endl;
+        } else {
+            cout << "Node with key " << key << " not found in the tree." << endl;
+        }
+    }
+
+    void inOrderTraversal(Node<KeyType>* node) {
+        if (node != nullptr) {
+            inOrderTraversal(node->left);
+            cout << node->key << " ";
+            inOrderTraversal(node->right);
+        }
+    }
+
+    
+
 };

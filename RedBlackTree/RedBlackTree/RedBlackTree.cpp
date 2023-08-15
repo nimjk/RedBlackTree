@@ -1,18 +1,40 @@
 ﻿#include <iostream>
+#include <stdlib.h>
+#include <time.h>
 #include "RBTree.hpp"
 
+using namespace std;
+
 int main() {
-    RedBlackTree rbTree;
+    RedBlackTree<int> rbTree;
 
-    rbTree.insert(10);
-    rbTree.insert(5);
-    rbTree.insert(15);
-    rbTree.insert(3);
-    rbTree.insert(7);
-    rbTree.insert(12);
-    rbTree.insert(18);
+    int arr[50];
 
-    // 이후에 트리의 상태를 확인하거나 다른 기능들을 테스트할 수 있습니다.
+    srand(unsigned int(time(0)));
+
+    int count = 0;
+
+    while(count < 50){
+        int tmp = rand() % 100 + 1;
+        int isSame = 0;
+        for (int i = 0; i < 50; i++){
+            if(tmp == arr[i]){
+                isSame = 1;
+                break;
+            }
+        }
+        if(isSame == 0){
+            arr[count] = tmp;
+            rbTree.insert(arr[count]);
+            count++;
+        }
+    }
+
+    cout << "In-order traversal of the tree: ";
+    rbTree.inOrderTraversal(rbTree.getRoot());
+    cout << endl;
+
+    
 
     return 0;
 }
