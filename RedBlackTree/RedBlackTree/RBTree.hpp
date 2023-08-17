@@ -342,15 +342,15 @@ public:
     }
 
     void deleteNodeSafely(RedBlackTree<int>& rbTree, int key) {
-        while (deleteInProgress.exchange(true)) {
+        while (eraseInProgress.exchange(true)) {
             this_thread::yield();
         }
 
-        lock_guard<mutex> lock(deleteMutex);
+        lock_guard<mutex> lock(eraseMutex);
 
         rbTree.erase(key);
 
-        deleteInProgress.store(false);
+        eraseInProgress.store(false);
     }
-    
+
 };
