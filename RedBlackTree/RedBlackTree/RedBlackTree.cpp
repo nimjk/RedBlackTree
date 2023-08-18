@@ -26,12 +26,10 @@ int main() {
     while(count < 2000){
         int tmp = rand() % 5000 + 1;
         int isSame = 0;
-        if(treeData.size() != 0){
-            for (int i = 0; i < treeData.size(); i++){
-                if(tmp == treeData[i]){
-                    isSame = 1;
-                    break;
-                }
+        for (int i = 0; i < treeData.size(); i++){
+            if(tmp == treeData[i]){
+                isSame = 1;
+                break;
             }
         }
         
