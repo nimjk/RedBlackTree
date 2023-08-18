@@ -7,14 +7,14 @@
 #include <thread>
 #include <vector>
 #include "RBTree.hpp"
-#include "SpinLock.hpp"
+// #include "SpinLock.hpp"
 
 using namespace std;
 
 int main() {
     RedBlackTree<int> rbTree;
 
-    int arr[2000];
+    vector<int> treeData;
 
     srand(GetTickCount());
 
@@ -26,15 +26,18 @@ int main() {
     while(count < 2000){
         int tmp = rand() % 5000 + 1;
         int isSame = 0;
-        for (int i = 0; i < 2000; i++){
-            if(tmp == arr[i]){
-                isSame = 1;
-                break;
+        if(treeData.size() != 0){
+            for (int i = 0; i < treeData.size(); i++){
+                if(tmp == treeData[i]){
+                    isSame = 1;
+                    break;
+                }
             }
         }
+        
         if(isSame == 0){
-            arr[count] = tmp;
-            rbTree.insert(arr[count]);
+            treeData.push_back(tmp);
+            rbTree.insert(treeData[count]);
             count++;
         }
     }
@@ -59,7 +62,7 @@ int main() {
         int searchnum = rand() % 5000+1;
 
         start = clock();
-        rbTree.search(searchnum);
+        rbTree.search(searchnum); // 배열 index로 할꺼면 searchnum 대신에 treeData[searchidx]
         end = clock();
 
         duration = (double)(end - start) / CLOCKS_PER_SEC;
@@ -89,8 +92,6 @@ int main() {
     cout << "maximum time of search : " << maxtime << "초\n";
     cout << "total time of search : " << totaltime << "초\n";
     cout << "average time of search : " << meantime << "초\n";
-    
-     
 
     return 0;
 }
